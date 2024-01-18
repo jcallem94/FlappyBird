@@ -20,6 +20,8 @@ WIDTH = 280
 HEIGHT = 500
 
 # Definir el fondo y el personaje
+bg = 'background-day'
+bs = "base"
 background = Actor(path+"images/background-day.png")
 base = Actor(path+"images/base.png",(150,470))
 bird = Actor(path+"images/yellowbird-midflap.png", (WIDTH / 4, HEIGHT / 3))
@@ -33,8 +35,14 @@ mode = 'begin'
 gravity = 3
 vy = 0
 jump = -2
+
+bg_veloc = 2
+bg_pos = 0
+
 pipe_gap = 88
 pipe_speed = 1
+
+
 score = 0
 
 def update_bird(dt):
@@ -85,6 +93,8 @@ def reset_game():
 def draw():
     # Dibujar el fondo y el personaje
     background.draw()
+    screen.blit(bg, (bg_pos, 0))
+    screen.blit(bg, (bg_pos + WIDTH, 0))
     if mode == 'begin':
         begin.draw()
         base.draw()
@@ -101,7 +111,8 @@ def draw():
             fontsize=70,
             shadow=(1, 1)
         )
-        base.draw()
+        screen.blit(bs, (bg_pos, 410))
+        screen.blit(bs, (bg_pos + WIDTH, 410))
         screen.draw.text(
             f'Max Score: {max_score}',
             color='white',
@@ -124,6 +135,14 @@ def update(dt):
     global vy
     global mode
     global max_score
+    global bg_pos
+
+    bg_pos -= bg_veloc
+
+    if bg_pos <= -WIDTH:
+        bg_pos = 0
+    if mode == 'game':
+        update_bird(dt)
     # Actualizar el juego (se llama automáticamente)
     if mode == 'game':
         update_bird(dt)
@@ -150,5 +169,16 @@ def on_key_down(key):
         if key == keys.SPACE:
             mode = 'game'
             reset_game()
+
+def on_mouse_down(button, pos) :
+    global mode, vy
+    if button == mouse.LEFT and mode == 'begin':
+        mode = 'game'
+        reset_game()
+    elif mode == 'game' and button == mouse.LEFT:
+        vy = jump
+    elif mode == 'game_over' and button == mouse.LEFT:
+        mode = 'game'
+        reset_game()
 
 pgzrun.go()
